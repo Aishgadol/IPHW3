@@ -1,0 +1,4 @@
+best combination so far:
+r=5
+spatial_std=10
+intensity_std=30

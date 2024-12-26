@@ -1,0 +1,85 @@
+# Idan Morad, 316451012
+# Student_Name2, Student_ID2
+
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+def clean_gaussian_noise_bilateral(im, radius, stdSpatial, stdIntensity):
+
+    # convert to float
+    im_float = im.astype(np.float64)
+    rows, cols = im_float.shape
+
+    #pad the image using reflection
+    padded_float = cv2.copyMakeBorder(im_float, top=radius, bottom=radius,
+                                       left=radius, right=radius, borderType=cv2.BORDER_REFLECT_101)
+
+    # prepare padded result_image
+    padded_clean = np.zeros_like(padded_float)
+
+    # create distances grids
+    distance = np.arange(-radius, radius + 1)
+    dist_x, dist_y = np.meshgrid(distance, distance)
+
+    # precompute spatial mask
+    spatial_mask = np.exp(-((dist_x ** 2 + dist_y ** 2) / (2 * (stdSpatial ** 2))))
+
+    # filter each pixel in the padded image (valid range)
+    padded_rows, padded_cols = padded_float.shape
+    for i in range(radius, padded_rows - radius):
+        for j in range(radius, padded_cols - radius):
+
+            window = padded_float[i - radius:i+radius+1, j -radius:j+radius+1]
+            center_value = padded_float[i, j]
+            intensity_diff = window - center_value
+            intensity_mask = np.exp(-((intensity_diff**2) / (2*(stdIntensity**2))))
+
+            combined_mask = spatial_mask * intensity_mask
+            weight_sum = np.sum(combined_mask)
+            #this if is important
+            if weight_sum > 0:
+                combined_mask /= weight_sum
+
+            padded_clean[i, j] = np.sum(combined_mask * window)
+
+    #crop back result image to original size
+    result_image=padded_clean[radius:radius + rows, radius:radius + cols]
+    result_image=np.clip(result_image, 0, 255)
+    result_image=result_image.astype(np.uint8)
+
+    return result_image
+
+
+
+# read a noisy grayscale image
+original_image_path = "q2/taj.jpg"
+image = cv2.imread(original_image_path, cv2.IMREAD_GRAYSCALE)
+
+# ensure the image is loaded
+if image is None:
+    raise FileNotFoundError(f"could not load image from {original_image_path}")
+
+# example parameters
+example_radius = 9
+example_stdSpatial = 10
+example_stdIntensity = 30
+
+# apply bilateral filtering
+clear_image_b = clean_gaussian_noise_bilateral(image, example_radius, example_stdSpatial, example_stdIntensity)
+
+# visualize
+plt.figure(figsize=(10, 5))
+plt.subplot(1, 2, 1)
+plt.title("noisy image")
+plt.imshow(image, cmap='gray')
+plt.axis('off')
+
+plt.subplot(1, 2, 2)
+plt.title("cleaned image")
+plt.imshow(clear_image_b, cmap='gray')
+plt.axis('off')
+
+plt.tight_layout()
+plt.show()
