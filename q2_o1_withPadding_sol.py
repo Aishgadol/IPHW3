@@ -31,10 +31,9 @@ def clean_gaussian_noise_bilateral(im, radius, stdSpatial, stdIntensity):
     for i in range(radius, padded_rows - radius):
         for j in range(radius, padded_cols - radius):
 
-            window = padded_float[i - radius:i+radius+1, j -radius:j+radius+1]
-            center_value = padded_float[i, j]
-            intensity_diff = window - center_value
-            intensity_mask = np.exp(-((intensity_diff**2) / (2*(stdIntensity**2))))
+            window_at_ij = padded_float[i - radius:i+radius+1, j -radius:j+radius+1]
+            centeral_value = padded_float[i, j]
+            intensity_mask = np.exp(-(((window_at_ij - centeral_value)**2) / (2*(stdIntensity**2))))
 
             combined_mask = spatial_mask * intensity_mask
             weight_sum = np.sum(combined_mask)
@@ -42,7 +41,7 @@ def clean_gaussian_noise_bilateral(im, radius, stdSpatial, stdIntensity):
             if weight_sum > 0:
                 combined_mask /= weight_sum
 
-            padded_clean[i, j] = np.sum(combined_mask * window)
+            padded_clean[i, j] = np.sum(combined_mask * window_at_ij)
 
     #crop back result image to original size
     result_image=padded_clean[radius:radius + rows, radius:radius + cols]
@@ -54,7 +53,7 @@ def clean_gaussian_noise_bilateral(im, radius, stdSpatial, stdIntensity):
 
 
 # read a noisy grayscale image
-original_image_path = "q2/taj.jpg"
+original_image_path = "q2/balls.jpg"
 image = cv2.imread(original_image_path, cv2.IMREAD_GRAYSCALE)
 
 # ensure the image is loaded
@@ -62,12 +61,12 @@ if image is None:
     raise FileNotFoundError(f"could not load image from {original_image_path}")
 
 # example parameters
-example_radius = 9
-example_stdSpatial = 10
-example_stdIntensity = 30
+radius = 7
+stdSpatial = 25
+stdIntensity = 20
 
 # apply bilateral filtering
-clear_image_b = clean_gaussian_noise_bilateral(image, example_radius, example_stdSpatial, example_stdIntensity)
+clear_image_b = clean_gaussian_noise_bilateral(image, radius, stdSpatial, stdIntensity)
 
 # visualize
 plt.figure(figsize=(10, 5))

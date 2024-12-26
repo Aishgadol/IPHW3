@@ -129,16 +129,16 @@ if __name__ == "__main__":
     print("Image loaded successfully.")
 
     # define parameter ranges
-    radius_list = [4,6,8]  # radius should not be bigger than 5
-    std_spatial_list = [10]  # example spatial std deviations
-    std_intensity_list = [30]  # example intensity std deviations
+    radius_list = [9]  # radius should not be bigger than 5
+    std_spatial_list = [2000]  # example spatial std deviations
+    std_intensity_list = [40]  # example intensity std deviations
 
     # calculate total number of combinations for progress tracking
     total_combinations = len(radius_list) * len(std_spatial_list) * len(std_intensity_list)
     current_combination = 0
 
     # prepare the results directory
-    results_dir = "taj_results"
+    results_dir = "q2_results"
     if not os.path.exists(results_dir):
         os.makedirs(results_dir)
         print(f"Created directory '{results_dir}' for saving results.")
@@ -175,5 +175,5 @@ if __name__ == "__main__":
 
                 print(f"Saved result to '{save_path}'")
 
-    print("All parameter combinations processed. All results saved in 'taj_results' folder.")
+    print("All parameter combinations processed. All results saved in 'q2_results' folder.")
     print("Script finished successfully.")
