@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 def clean_gaussian_noise_bilateral(im, radius, stdSpatial, stdIntensity):
 
-    # convert to float
+    #convert image to float64 2d array
     im_float = im.astype(np.float64)
     rows, cols = im_float.shape
 
@@ -16,17 +16,17 @@ def clean_gaussian_noise_bilateral(im, radius, stdSpatial, stdIntensity):
     padded_float = cv2.copyMakeBorder(im_float, top=radius, bottom=radius,
                                        left=radius, right=radius, borderType=cv2.BORDER_REFLECT_101)
 
-    # prepare padded result_image
+    #padded result image is initialized to 0s
     padded_clean = np.zeros_like(padded_float)
 
-    # create distances grids
+    #create meshgrid to account for all possible distance offsets
     distance = np.arange(-radius, radius + 1)
     dist_x, dist_y = np.meshgrid(distance, distance)
 
-    # precompute spatial mask
+    #calculate spatial mask according to given formula
     spatial_mask = np.exp(-((dist_x ** 2 + dist_y ** 2) / (2 * (stdSpatial ** 2))))
 
-    # filter each pixel in the padded image (valid range)
+    #go through and filter each pixel in the padded image
     padded_rows, padded_cols = padded_float.shape
     for i in range(radius, padded_rows - radius):
         for j in range(radius, padded_cols - radius):
@@ -52,23 +52,23 @@ def clean_gaussian_noise_bilateral(im, radius, stdSpatial, stdIntensity):
 
 
 
-# read a noisy grayscale image
+#read the image, when reading we make sure it's in grayscale
 original_image_path = "q2/balls.jpg"
 image = cv2.imread(original_image_path, cv2.IMREAD_GRAYSCALE)
 
-# ensure the image is loaded
+#make sure image has loaded
 if image is None:
     raise FileNotFoundError(f"could not load image from {original_image_path}")
 
-# example parameters
+#input parameters
 radius = 7
 stdSpatial = 25
 stdIntensity = 20
 
-# apply bilateral filtering
+#apply bilateral filtering
 clear_image_b = clean_gaussian_noise_bilateral(image, radius, stdSpatial, stdIntensity)
 
-# visualize
+#visualize
 plt.figure(figsize=(10, 5))
 plt.subplot(1, 2, 1)
 plt.title("noisy image")
